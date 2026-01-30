@@ -1,0 +1,115 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model BodegaGeneral {
+  id           Int          @id @default(autoincrement())
+  nombre       String
+  descripcion  String?
+  createdAt    DateTime     @default(now())
+
+  consumibles  Consumible[]
+}
+
+model Consumible {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  descripcion   String?
+  cantidad      Int
+  stockMinimo   Int
+  stockMaximo   Int
+  precioCompra  Float
+  createdAt     DateTime      @default(now())
+
+  bodegaId      Int
+  bodega        BodegaGeneral @relation(fields: [bodegaId], references: [id])
+}
+
+model Vehiculo {
+  id          Int        @id @default(autoincrement())
+  placa       String     @unique
+  marca       String
+  modelo      String
+  anio        Int
+  createdAt   DateTime   @default(now())
+
+  cuadrillas  Cuadrilla[]
+  miniBodega  MiniBodega?
+}
+
+model MiniBodega {
+  id           Int        @id @default(autoincrement())
+  nombre       String
+  createdAt    DateTime   @default(now())
+
+  vehiculoId   Int        @unique
+  vehiculo     Vehiculo  @relation(fields: [vehiculoId], references: [id])
+
+  consumibles  MiniConsumible[]
+}
+
+model MiniConsumible {
+  id            Int        @id @default(autoincrement())
+  nombre        String
+  cantidad      Int
+  stockMinimo   Int
+  stockMaximo   Int
+  createdAt     DateTime   @default(now())
+
+  miniBodegaId  Int
+  miniBodega    MiniBodega @relation(fields: [miniBodegaId], references: [id])
+}
+
+model Tecnico {
+  id            Int        @id @default(autoincrement())
+  nombres       String
+  cedula        String     @unique
+  especialidad  String
+  activo        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+
+  cuadrillas    Cuadrilla[]
+}
+
+model Cuadrilla {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  createdAt   DateTime   @default(now())
+
+  tecnicoId   Int
+  tecnico     Tecnico    @relation(fields: [tecnicoId], references: [id])
+
+  vehiculoId  Int?
+  vehiculo    Vehiculo?  @relation(fields: [vehiculoId], references: [id])
+
+  empleados   EmpleadoCuadrilla[]
+}
+
+model Empleado {
+  id          Int                   @id @default(autoincrement())
+  nombres     String
+  cedula      String     @unique
+  cargo       String
+  activo      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  cuadrillas  EmpleadoCuadrilla[]
+}
+
+model EmpleadoCuadrilla {
+  empleadoId  Int
+  cuadrillaId Int
+
+  empleado    Empleado  @relation(fields: [empleadoId], references: [id])
+  cuadrilla   Cuadrilla @relation(fields: [cuadrillaId], references: [id])
+
+  @@id([empleadoId, cuadrillaId])
+}
+
