@@ -9,6 +9,10 @@ datasource db {
   provider = "postgresql"
 }
 
+/* =========================
+   BODEGA GENERAL
+========================= */
+
 model BodegaGeneral {
   id           Int          @id @default(autoincrement())
   nombre       String
@@ -30,86 +34,130 @@ model Consumible {
 
   bodegaId      Int
   bodega        BodegaGeneral @relation(fields: [bodegaId], references: [id])
+
+  movimientos   MovimientoStock[]
 }
 
+/* =========================
+   VEHÍCULOS Y MINI BODEGA
+========================= */
+
 model Vehiculo {
-  id          Int        @id @default(autoincrement())
-  placa       String     @unique
+  id          Int          @id @default(autoincrement())
+  placa       String       @unique
   marca       String
   modelo      String
   anio        Int
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime     @default(now())
 
   cuadrillas  Cuadrilla[]
   miniBodega  MiniBodega?
 }
 
 model MiniBodega {
-  id           Int        @id @default(autoincrement())
+  id           Int            @id @default(autoincrement())
   nombre       String
-  createdAt    DateTime   @default(now())
+  createdAt    DateTime       @default(now())
 
-  vehiculoId   Int        @unique
-  vehiculo     Vehiculo  @relation(fields: [vehiculoId], references: [id])
+  vehiculoId   Int            @unique
+  vehiculo     Vehiculo       @relation(fields: [vehiculoId], references: [id])
 
   consumibles  MiniConsumible[]
 }
 
 model MiniConsumible {
-  id            Int        @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   nombre        String
   cantidad      Int
   stockMinimo   Int
   stockMaximo   Int
-  createdAt     DateTime   @default(now())
+  createdAt     DateTime     @default(now())
 
   miniBodegaId  Int
-  miniBodega    MiniBodega @relation(fields: [miniBodegaId], references: [id])
+  miniBodega    MiniBodega   @relation(fields: [miniBodegaId], references: [id])
+
+  movimientos   MovimientoStock[]
 }
+
+/* =========================
+   PERSONAL
+========================= */
 
 model Tecnico {
-  id            Int        @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   nombres       String
-  cedula        String     @unique
+  cedula        String       @unique
   especialidad  String
-  activo        Boolean    @default(true)
-  createdAt     DateTime   @default(now())
+  activo        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
 
   cuadrillas    Cuadrilla[]
-}
-
-model Cuadrilla {
-  id          Int        @id @default(autoincrement())
-  nombre      String
-  createdAt   DateTime   @default(now())
-
-  tecnicoId   Int
-  tecnico     Tecnico    @relation(fields: [tecnicoId], references: [id])
-
-  vehiculoId  Int?
-  vehiculo    Vehiculo?  @relation(fields: [vehiculoId], references: [id])
-
-  empleados   EmpleadoCuadrilla[]
+  movimientos   MovimientoStock[]
 }
 
 model Empleado {
-  id          Int                   @id @default(autoincrement())
-  nombres     String
-  cedula      String     @unique
-  cargo       String
-  activo      Boolean    @default(true)
-  createdAt   DateTime   @default(now())
+  id           Int                  @id @default(autoincrement())
+  nombres      String
+  cedula       String               @unique
+  cargo        String
+  activo       Boolean              @default(true)
+  createdAt    DateTime             @default(now())
 
-  cuadrillas  EmpleadoCuadrilla[]
+  cuadrillas   EmpleadoCuadrilla[]
 }
 
-model EmpleadoCuadrilla {
-  empleadoId  Int
-  cuadrillaId Int
+/* =========================
+   CUADRILLAS
+========================= */
 
-  empleado    Empleado  @relation(fields: [empleadoId], references: [id])
-  cuadrilla   Cuadrilla @relation(fields: [cuadrillaId], references: [id])
+model Cuadrilla {
+  id           Int                  @id @default(autoincrement())
+  nombre       String
+  createdAt    DateTime             @default(now())
+
+  tecnicoId    Int
+  tecnico      Tecnico              @relation(fields: [tecnicoId], references: [id])
+
+  vehiculoId   Int?
+  vehiculo     Vehiculo?            @relation(fields: [vehiculoId], references: [id])
+
+  empleados    EmpleadoCuadrilla[]
+  movimientos  MovimientoStock[]
+}
+
+/* =========================
+   RELACIÓN EMPLEADO-CUADRILLA
+========================= */
+
+model EmpleadoCuadrilla {
+  empleadoId   Int
+  cuadrillaId  Int
+
+  empleado     Empleado   @relation(fields: [empleadoId], references: [id])
+  cuadrilla    Cuadrilla  @relation(fields: [cuadrillaId], references: [id])
 
   @@id([empleadoId, cuadrillaId])
 }
 
+/* =========================
+   MOVIMIENTOS DE STOCK
+========================= */
+
+model MovimientoStock {
+  id              Int          @id @default(autoincrement())
+  tipo            String       // ENTRADA | SALIDA
+  cantidad        Int
+  createdAt       DateTime     @default(now())
+
+  consumibleId    Int?
+  miniConsumibleId Int?
+
+  tecnicoId       String    // Foreign key for Tecnico
+  cuadrillaId     Int       // Foreign key for Cuadrilla
+
+  consumible      Consumible?      @relation(fields: [consumibleId], references: [id])
+  miniConsumible  MiniConsumible?  @relation(fields: [miniConsumibleId], references: [id])
+
+  tecnico         Tecnico   @relation(fields: [tecnicoId], references: [cedula], map: "MovimientoStock_tecnico_fkey")
+  cuadrilla       Cuadrilla @relation(fields: [cuadrillaId], references: [id], map: "MovimientoStock_cuadrilla_fkey")
+}
