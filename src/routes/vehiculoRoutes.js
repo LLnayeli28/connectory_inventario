@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// 👇 IMPORTAR TODO
+// IMPORTAR TODO
 const {
   crearVehiculo,
   obtenerVehiculos,

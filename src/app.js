@@ -9,6 +9,7 @@ const tecnicoRoutes = require('./routes/tecnicoRoutes');
 const cuadrillaRoutes = require('./routes/cuadrillaRoutes');
 const vehiculoRoutes = require('./routes/vehiculoRoutes');
 
+
 //  Middlewares
 app.use(cors());
 app.use(express.json());
