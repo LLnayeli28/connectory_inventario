@@ -8,7 +8,7 @@ const empleadoRoutes = require('./routes/empleadoRoutes');
 const tecnicoRoutes = require('./routes/tecnicoRoutes');
 const cuadrillaRoutes = require('./routes/cuadrillaRoutes');
 const vehiculoRoutes = require('./routes/vehiculoRoutes');
-
+const consumibleRoutes = require("./routes/consumibleRoutes");
 
 //  Middlewares
 app.use(cors());
@@ -20,6 +20,7 @@ app.use('/api', empleadoRoutes);
 app.use('/api', tecnicoRoutes);
 app.use('/api', cuadrillaRoutes);
 app.use('/api', vehiculoRoutes);
+app.use("/api", consumibleRoutes);
 
 //  Ruta de prueba
 app.get('/', (req, res) => {
